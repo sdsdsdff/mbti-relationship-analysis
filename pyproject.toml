@@ -9,8 +9,11 @@ description = "MBTI Relationship Analysis MVP"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "fastapi>=0.110,<0.111",
     "pydantic>=1.10,<3.0",
+    "python-multipart>=0.0.9,<1.0",
     "python-dotenv>=1.0,<2.0",
+    "uvicorn>=0.30,<1.0",
 ]
 
 [project.optional-dependencies]
@@ -21,6 +24,7 @@ dev = [
 ]
 
 [project.scripts]
+mbti-api = "src.api:main"
 mbti-analyze = "src.cli:main"
 
 [dependency-groups]

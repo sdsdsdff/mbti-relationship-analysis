@@ -37,6 +37,17 @@
 
 ## 🏗️ 架构设计
 
+### 当前交付形态
+
+- **Route A（保留）**：本地 CLI 分析流，适合脚本化与离线调试
+- **Route B（本次 MVP）**：`FastAPI` 后端 + `Next.js` 前端，复用同一条 Python 分析 pipeline
+
+当前仓库已经同时支持：
+
+1. `mbti-analyze` / `scripts/run_analysis.py` 的 CLI 工作流
+2. `src/api.py` 暴露的 HTTP API
+3. `web/` 下的单页上传式前端
+
 ### 五层架构
 
 ```
@@ -94,10 +105,11 @@
 - [x] 基础信号抽取
 - [x] 基础报告生成
 - [x] BYOK 分析流程
+- [x] Route B Web MVP（FastAPI + Next.js）
 
 ## 🛠️ 本地开发
 
-### 1. 安装依赖
+### 1. 安装 Python 依赖
 
 推荐使用 `uv`：
 
@@ -113,7 +125,7 @@ python3 -m venv .venv
 ./.venv/bin/python -m pip install -e ".[dev]"
 ```
 
-### 2. 运行本地分析
+### 2. Route A：运行 CLI 分析
 
 安装后会提供稳定 CLI 入口 `mbti-analyze`：
 
@@ -127,6 +139,71 @@ python3 -m venv .venv
 - 不提供 `--config` 或 API Key 时，会自动 fallback 到本地 heuristics pipeline
 - BYOK 默认关闭；只有在配置里显式设置 `byok.enabled = true` 时才会尝试联网增强
 - 仍可直接运行兼容脚本：`./.venv/bin/python scripts/run_analysis.py ...`
+
+### 3. Route B：启动 FastAPI 后端
+
+后端暴露两个 MVP 接口：
+
+- `GET /api/health`
+- `POST /api/analyze`（`multipart/form-data`，字段：`transcript` + 可选 `self_names`）
+
+本地启动方式：
+
+```bash
+./.venv/bin/uvicorn src.api:app --reload
+```
+
+或者使用新增脚本入口：
+
+```bash
+./.venv/bin/mbti-api
+```
+
+默认会为本地前端开放常见 dev origin 的 CORS：
+
+- `http://localhost:3000`
+- `http://127.0.0.1:3000`
+- `http://localhost:3001`
+- `http://127.0.0.1:3001`
+
+如需覆盖，可设置：
+
+```bash
+export MBTI_WEB_ORIGINS="http://localhost:3000,http://127.0.0.1:3000"
+```
+
+### 4. Route B：启动 Next.js 前端
+
+前端位于 `web/`，是一个最小单页上传界面。
+
+```bash
+cd web
+cp .env.local.example .env.local
+npm install
+npm run dev
+```
+
+默认前端会请求：`http://127.0.0.1:8000`
+
+如果你的后端运行在别的地址，修改 `web/.env.local`：
+
+```bash
+NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000
+```
+
+### 5. 推荐联调流程
+
+打开两个终端：
+
+```bash
+# 终端 1：后端
+./.venv/bin/uvicorn src.api:app --reload
+
+# 终端 2：前端
+cd web && npm install && npm run dev
+```
+
+然后访问：`http://localhost:3000`
 
 ## 🤖 BYOK MVP 使用
 
@@ -226,6 +303,6 @@ MIT License
 
 ---
 
-**状态**：🟡 Phase 2 - MVP 主干已就绪，BYOK 骨架已接入
+**状态**：🟡 Phase 2 - CLI MVP 与 Route B Web MVP 均已就绪
 **发起日期**：2026-03-07
 **最后更新**：2026-03-09
