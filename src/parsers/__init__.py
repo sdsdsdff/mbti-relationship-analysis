@@ -1,6 +1,7 @@
 """Parsing and normalization models for imported conversations."""
 
 from .markdown_parser import MarkdownParser
+from .parser_factory import ParserFactory
 from .schema import (
     AttachmentRef,
     Conversation,
@@ -22,6 +23,7 @@ __all__ = [
     "Message",
     "MessageKind",
     "MessageRole",
+    "ParserFactory",
     "ParserProvenance",
     "TextParser",
 ]
