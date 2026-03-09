@@ -11,6 +11,7 @@ from .schema import (
     MessageRole,
     ParserProvenance,
 )
+from .text_parser import TextParser
 
 __all__ = [
     "AttachmentRef",
@@ -22,4 +23,5 @@ __all__ = [
     "MessageKind",
     "MessageRole",
     "ParserProvenance",
+    "TextParser",
 ]
