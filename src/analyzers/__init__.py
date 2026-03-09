@@ -11,6 +11,7 @@ from .report_schema import (
     ReportSectionBlock,
     TypeCandidate,
 )
+from .signal_extractor import HeuristicSignalExtractor
 from .signal_schema import (
     BehaviorSignal,
     BehaviorSignalCategory,
@@ -35,6 +36,7 @@ __all__ = [
     "ConfidenceBand",
     "EvidenceAnchor",
     "EvidenceSourceType",
+    "HeuristicSignalExtractor",
     "InteractionWindow",
     "ReportCard",
     "ReportCardType",
