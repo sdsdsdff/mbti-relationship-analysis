@@ -159,6 +159,7 @@ def test_pipeline_falls_back_when_api_key_is_missing() -> None:
                 "enabled": True,
                 "provider": "openai",
                 "model": "gpt-4.1-mini",
+                "api_key_env": "MBTI_TEST_MISSING_KEY",
             }
         }
     )

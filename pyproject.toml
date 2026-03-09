@@ -9,13 +9,23 @@ description = "MBTI Relationship Analysis MVP"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "pydantic>=1.10,<2.0",
+    "pydantic>=1.10,<3.0",
     "python-dotenv>=1.0,<2.0",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0,<10.0",
+    "black>=24.0,<25.0",
+    "ruff>=0.4,<0.6",
+]
+
+[project.scripts]
+mbti-analyze = "src.cli:main"
+
 [dependency-groups]
 dev = [
-    "pytest>=8.0,<9.0",
+    "pytest>=8.0,<10.0",
     "black>=24.0,<25.0",
     "ruff>=0.4,<0.6",
 ]

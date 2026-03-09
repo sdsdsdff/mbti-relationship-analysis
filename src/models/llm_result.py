@@ -12,7 +12,7 @@ import json
 from enum import Enum
 from typing import Any, Mapping
 
-from pydantic import BaseModel, Field, validator
+from src.compat.pydantic import BaseModel, Field, validator
 
 from src.analyzers.report_schema import (
     EvidenceAnchor,

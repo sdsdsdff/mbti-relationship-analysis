@@ -82,18 +82,51 @@
 - [x] 架构设计
 - [x] 隐私路线
 
-### Phase 1：文档与 Schema（当前）
+### Phase 1：文档与 Schema
 - [ ] 内部消息 schema
 - [ ] 行为信号 schema
 - [ ] 报告 IR / 卡片结构
 - [ ] 背景补充信息 schema
 
-### Phase 2：开源 MVP
+### Phase 2：开源 MVP（当前）
 - [x] md/txt 导入
 - [x] 基础归一化
 - [x] 基础信号抽取
 - [x] 基础报告生成
 - [x] BYOK 分析流程
+
+## 🛠️ 本地开发
+
+### 1. 安装依赖
+
+推荐使用 `uv`：
+
+```bash
+uv sync --group dev
+```
+
+如果你更习惯标准 `venv + pip`：
+
+```bash
+python3 -m venv .venv
+./.venv/bin/python -m ensurepip --upgrade
+./.venv/bin/python -m pip install -e ".[dev]"
+```
+
+### 2. 运行本地分析
+
+安装后会提供稳定 CLI 入口 `mbti-analyze`：
+
+```bash
+./.venv/bin/mbti-analyze \
+  --input tests/fixtures/flirty_positive_chat.md \
+  --self-name Me \
+  --report-only
+```
+
+- 不提供 `--config` 或 API Key 时，会自动 fallback 到本地 heuristics pipeline
+- BYOK 默认关闭；只有在配置里显式设置 `byok.enabled = true` 时才会尝试联网增强
+- 仍可直接运行兼容脚本：`./.venv/bin/python scripts/run_analysis.py ...`
 
 ## 🤖 BYOK MVP 使用
 
@@ -123,7 +156,7 @@
 ```bash
 cp mbti.config.example.json mbti.config.json
 export OPENAI_API_KEY="your-key-here"
-python scripts/run_analysis.py \
+./.venv/bin/mbti-analyze \
   --input data/raw/chat.md \
   --config mbti.config.json \
   --output data/processed/analysis.json

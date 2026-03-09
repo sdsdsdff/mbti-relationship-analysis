@@ -19,7 +19,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Mapping
 
-from pydantic import BaseModel, Field, validator
+from src.compat.pydantic import BaseModel, Field, validator
 
 
 ENV_PREFIX = "MBTI_"
@@ -166,7 +166,7 @@ class BYOKConfig(BaseModel):
     """Bring-your-own-key model configuration."""
 
     enabled: bool = Field(
-        default=True,
+        default=False,
         description="Whether external model access is enabled in the current runtime.",
     )
     provider: BYOKProvider = Field(

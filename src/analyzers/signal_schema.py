@@ -20,7 +20,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any
 
-from pydantic import BaseModel, Field, root_validator, validator
+from src.compat.pydantic import BaseModel, Field, root_validator, validator
 
 
 class SignalSubject(str, Enum):
