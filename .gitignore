@@ -43,6 +43,8 @@ data/processed/
 *.log
 .env
 .env.local
+mbti.config.json
+*.local.json
 
 # Model cache
 .cache/
