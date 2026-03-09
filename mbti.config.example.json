@@ -1,0 +1,14 @@
+{
+  "environment": "development",
+  "debug": false,
+  "default_locale": "zh-CN",
+  "default_timezone": "UTC",
+  "byok": {
+    "enabled": true,
+    "provider": "openai",
+    "model": "gpt-4.1-mini",
+    "api_key_env": "OPENAI_API_KEY",
+    "temperature": 0.2,
+    "max_tokens": 900
+  }
+}

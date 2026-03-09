@@ -69,9 +69,23 @@ export OPENAI_API_KEY="your-key-here"
 python scripts/run_analysis.py --input data/raw/chat.md
 ```
 
+### BYOK 配置示例
+
+项目根目录提供了 `mbti.config.example.json`，推荐复制为 `mbti.config.json` 后再运行：
+
+```bash
+cp mbti.config.example.json mbti.config.json
+export OPENAI_API_KEY="your-key-here"
+python scripts/run_analysis.py --input data/raw/chat.md --config mbti.config.json
+```
+
+当前 BYOK provider 支持：`openai` / `openrouter` / `anthropic` / `custom`。
+
+如果 BYOK 被禁用、没有 key，或请求 / 适配失败，pipeline 会自动回退到纯 heuristics 分析，并在输出 JSON 的 `report.metadata.llm_enrichment` 中记录状态。
+
 ## 当前状态
 
 - ✅ 项目初始化
 - ✅ 目录结构创建
-- 🔄 Schema 设计中
-- ⏳ 核心代码待实现
+- ✅ Phase 2 MVP 主干已可运行
+- ✅ BYOK 分析流程骨架已接入

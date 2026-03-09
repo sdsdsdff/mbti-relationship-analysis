@@ -89,11 +89,69 @@
 - [ ] 背景补充信息 schema
 
 ### Phase 2：开源 MVP
-- [ ] md/txt 导入
-- [ ] 基础归一化
-- [ ] 基础信号抽取
-- [ ] 基础报告生成
-- [ ] BYOK 分析流程
+- [x] md/txt 导入
+- [x] 基础归一化
+- [x] 基础信号抽取
+- [x] 基础报告生成
+- [x] BYOK 分析流程
+
+## 🤖 BYOK MVP 使用
+
+### 1. 准备配置
+
+可参考根目录的 `mbti.config.example.json`：
+
+```json
+{
+  "byok": {
+    "enabled": true,
+    "provider": "openai",
+    "model": "gpt-4.1-mini",
+    "api_key_env": "OPENAI_API_KEY",
+    "temperature": 0.2,
+    "max_tokens": 900
+  }
+}
+```
+
+- `provider` 当前支持：`openai` / `openrouter` / `anthropic` / `custom`
+- `custom` 模式需要额外提供 `base_url`
+- 不要把真实密钥写进仓库，优先通过环境变量注入
+
+### 2. 运行分析入口
+
+```bash
+cp mbti.config.example.json mbti.config.json
+export OPENAI_API_KEY="your-key-here"
+python scripts/run_analysis.py \
+  --input data/raw/chat.md \
+  --config mbti.config.json \
+  --output data/processed/analysis.json
+```
+
+- 不传 `--output` 时，会直接把 JSON 打印到标准输出
+- 加 `--report-only` 时，只输出最终报告 JSON
+
+### 3. Fallback 行为
+
+当前 BYOK enrichment 是**可选增强层**，不会阻断原有 heuristics pipeline：
+
+- `byok.enabled = false`：直接走纯 heuristics 报告
+- 已启用但缺少 key：直接 fallback 到纯 heuristics 报告
+- LLM 请求或结果适配出错：直接 fallback 到纯 heuristics 报告
+
+上述状态会记录到 `report.metadata.llm_enrichment`，便于区分：
+
+- 是否启用了 LLM enrichment
+- 是否实际尝试调用
+- 是否成功使用
+- fallback 原因（如 `disabled` / `missing_api_key` / `client_error`）
+
+### 4. 当前边界
+
+- 当前实现重点是 **prompt 打包 / provider 请求构建 / 结果适配 / pipeline 接入**
+- 已提供可 mock 的 client 接口与测试骨架
+- **未做真实联网成功验证**，所以更适合作为本地 MVP 骨架与后续联调起点
 
 ### Phase 3：增强解释与隐私
 - [ ] 证据回查优化
@@ -135,6 +193,6 @@ MIT License
 
 ---
 
-**状态**：🟡 Phase 1 - Schema 设计中  
-**发起日期**：2026-03-07  
+**状态**：🟡 Phase 2 - MVP 主干已就绪，BYOK 骨架已接入
+**发起日期**：2026-03-07
 **最后更新**：2026-03-09
