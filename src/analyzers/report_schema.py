@@ -24,11 +24,13 @@ from pydantic import BaseModel, Field, root_validator, validator
 
 
 class ReportSection(str, Enum):
-    """Top-level report grouping aligned with the product's three-layer output."""
+    """Top-level report grouping aligned with the MVP report structure."""
 
+    OVERVIEW = "overview"
     SELF = "self"
     OTHER = "other"
     RELATIONSHIP = "relationship"
+    ADVICE = "advice"
 
 
 class ReportCardType(str, Enum):
@@ -219,7 +221,7 @@ class ReportCard(BaseModel):
 
 
 class ReportSectionBlock(BaseModel):
-    """Group of cards belonging to one of the three main report sections."""
+    """Group of cards belonging to one top-level report section."""
 
     section: ReportSection = Field(..., description="Section identifier.")
     headline: str = Field(..., description="Short headline for the section.")
@@ -265,7 +267,7 @@ class AnalysisReportIR(BaseModel):
     summary: str = Field(..., description="Short overall summary for the report.")
     sections: list[ReportSectionBlock] = Field(
         default_factory=list,
-        description="The report's three top-level section blocks.",
+        description="The report's top-level section blocks.",
     )
     evidence_index: list[EvidenceAnchor] = Field(
         default_factory=list,

@@ -11,6 +11,7 @@ from .report_schema import (
     ReportSectionBlock,
     TypeCandidate,
 )
+from .report_generator import ReportGenerator
 from .signal_extractor import HeuristicSignalExtractor
 from .signal_schema import (
     BehaviorSignal,
@@ -38,6 +39,7 @@ __all__ = [
     "EvidenceSourceType",
     "HeuristicSignalExtractor",
     "InteractionWindow",
+    "ReportGenerator",
     "ReportCard",
     "ReportCardType",
     "ReportPriority",
