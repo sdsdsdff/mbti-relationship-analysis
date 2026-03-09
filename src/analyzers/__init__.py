@@ -1,5 +1,16 @@
 """Analysis-layer schemas and helpers."""
 
+from .report_schema import (
+    AnalysisReportIR,
+    EvidenceAnchor,
+    EvidenceSourceType,
+    ReportCard,
+    ReportCardType,
+    ReportPriority,
+    ReportSection,
+    ReportSectionBlock,
+    TypeCandidate,
+)
 from .signal_schema import (
     BehaviorSignal,
     BehaviorSignalCategory,
@@ -16,16 +27,25 @@ from .signal_schema import (
 )
 
 __all__ = [
+    "AnalysisReportIR",
     "BehaviorSignal",
     "BehaviorSignalCategory",
     "BehaviorSignalSet",
     "BehaviorSignalType",
     "ConfidenceBand",
+    "EvidenceAnchor",
+    "EvidenceSourceType",
     "InteractionWindow",
+    "ReportCard",
+    "ReportCardType",
+    "ReportPriority",
+    "ReportSection",
+    "ReportSectionBlock",
     "SignalConfidence",
     "SignalEvidenceSource",
     "SignalStrength",
     "SignalStrengthBand",
     "SignalSubject",
     "SignalValence",
+    "TypeCandidate",
 ]
