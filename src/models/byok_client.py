@@ -130,7 +130,12 @@ class BYOKClient:
         self.config = config.resolve_api_key()
         self.transport = transport or UrllibTransport()
 
-    def build_request(self, prompt_bundle: LLMPromptBundle) -> HTTPRequest:
+    def build_request(
+        self,
+        prompt_bundle: LLMPromptBundle,
+        *,
+        model_override: str | None = None,
+    ) -> HTTPRequest:
         """Build one normalized HTTP request for the configured provider."""
 
         self._validate_config()
@@ -138,13 +143,18 @@ class BYOKClient:
             method="POST",
             url=self._build_url(),
             headers=self._build_headers(),
-            json_body=self._build_payload(prompt_bundle),
+            json_body=self._build_payload(prompt_bundle, model_override=model_override),
         )
 
-    def analyze(self, prompt_bundle: LLMPromptBundle) -> dict[str, Any]:
+    def analyze(
+        self,
+        prompt_bundle: LLMPromptBundle,
+        *,
+        model_override: str | None = None,
+    ) -> dict[str, Any]:
         """Send one provider request and return the decoded model JSON output."""
 
-        http_request = self.build_request(prompt_bundle)
+        http_request = self.build_request(prompt_bundle, model_override=model_override)
         http_response = self.transport.send(http_request)
         if http_response.status_code >= 400:
             raise BYOKResponseError(
@@ -193,14 +203,19 @@ class BYOKClient:
             headers["X-Title"] = "MBTI Relationship Analysis MVP"
         return headers
 
-    def _build_payload(self, prompt_bundle: LLMPromptBundle) -> dict[str, Any]:
+    def _build_payload(
+        self,
+        prompt_bundle: LLMPromptBundle,
+        *,
+        model_override: str | None = None,
+    ) -> dict[str, Any]:
         """Build the provider-specific JSON payload for one analysis call."""
 
         if self.config.provider == BYOKProvider.ANTHROPIC:
-            return self._build_anthropic_payload(prompt_bundle)
+            return self._build_anthropic_payload(prompt_bundle, model_override=model_override)
 
         payload: dict[str, Any] = {
-            "model": self.config.model,
+            "model": model_override or self.config.analyzer_model,
             "messages": [message.dict() for message in prompt_bundle.messages],
             "temperature": self.config.temperature,
             "response_format": {"type": prompt_bundle.response_contract.format},
@@ -209,7 +224,12 @@ class BYOKClient:
             payload["max_tokens"] = self.config.max_tokens
         return payload
 
-    def _build_anthropic_payload(self, prompt_bundle: LLMPromptBundle) -> dict[str, Any]:
+    def _build_anthropic_payload(
+        self,
+        prompt_bundle: LLMPromptBundle,
+        *,
+        model_override: str | None = None,
+    ) -> dict[str, Any]:
         """Build the Anthropics-compatible request payload."""
 
         system_prompt = prompt_bundle.system_prompt
@@ -222,7 +242,7 @@ class BYOKClient:
             if message.role != LLMMessageRole.SYSTEM
         ]
         payload: dict[str, Any] = {
-            "model": self.config.model,
+            "model": model_override or self.config.analyzer_model,
             "system": system_prompt,
             "messages": anthropic_messages,
             "temperature": self.config.temperature,

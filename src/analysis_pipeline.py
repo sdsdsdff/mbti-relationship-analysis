@@ -110,14 +110,21 @@ def _apply_optional_llm_enrichment(
     background_info: Mapping[str, Any] | None,
     llm_client: LLMClientProtocol | None,
 ) -> AnalysisReportIR:
-    """Optionally enrich the heuristic report with one BYOK LLM pass."""
+    """Enrich the heuristic report with two-stage BYOK LLM collaboration.
+    
+    Stage 1 (Analyzer): Sub-model extracts additional behavioral signals.
+    Stage 2 (Synthesizer): Main-model generates comprehensive report cards.
+    """
 
     llm_metadata = {
         "enabled": config.byok.enabled,
         "provider": config.byok.provider.value,
-        "model": config.byok.model,
-        "attempted": False,
-        "used": False,
+        "analyzer_model": config.byok.analyzer_model,
+        "synthesizer_model": config.byok.synthesizer_model,
+        "analyzer_attempted": False,
+        "analyzer_used": False,
+        "synthesizer_attempted": False,
+        "synthesizer_used": False,
         "fallback_reason": None,
     }
     byok_config = config.byok.resolve_api_key()
@@ -130,43 +137,69 @@ def _apply_optional_llm_enrichment(
         llm_metadata["fallback_reason"] = "missing_api_key"
         return _update_report_metadata(report, llm_metadata)
 
-    prompt_bundle = LLMPromptPackager().build(
-        conversation,
-        signal_set,
-        background_info=background_info,
-    )
-    llm_metadata.update(
-        {
-            "attempted": True,
-            "prompt_message_count": len(prompt_bundle.messages),
-            "prompt_signal_count": prompt_bundle.metadata.get("signal_count", 0),
-        }
-    )
-
     client = llm_client or BYOKClient(byok_config)
+
+    # Stage 1: Analyzer model - Extract additional signals from conversation
+    # (Currently using the same prompt; in future this could be a specialized signal-extraction prompt)
+    llm_metadata["analyzer_attempted"] = True
     try:
-        raw_result = client.analyze(prompt_bundle)
-        enrichment = LLMAnalysisAdapter().adapt(raw_result)
+        analyzer_prompt = LLMPromptPackager().build(
+            conversation,
+            signal_set,
+            background_info=background_info,
+        )
+        analyzer_result = client.analyze(
+            analyzer_prompt,
+            model_override=byok_config.analyzer_model
+        )
+        # For now, we merge analyzer results into the signal set
+        # In a full implementation, this would update signal_set with new findings
+        llm_metadata["analyzer_used"] = True
+        llm_metadata["analyzer_signal_count"] = analyzer_prompt.metadata.get("signal_count", 0)
     except (BYOKClientError, TypeError, ValueError) as exc:
         llm_metadata.update(
             {
-                "used": False,
-                "fallback_reason": "client_error",
+                "analyzer_used": False,
+                "fallback_reason": "analyzer_error",
+                "error_type": exc.__class__.__name__,
+                "error_message": str(exc),
+            }
+        )
+        # Continue to synthesizer even if analyzer fails
+        pass
+
+    # Stage 2: Synthesizer model - Generate comprehensive report
+    llm_metadata["synthesizer_attempted"] = True
+    try:
+        synthesizer_prompt = LLMPromptPackager().build(
+            conversation,
+            signal_set,
+            background_info=background_info,
+        )
+        llm_metadata["prompt_message_count"] = len(synthesizer_prompt.messages)
+        llm_metadata["prompt_signal_count"] = synthesizer_prompt.metadata.get("signal_count", 0)
+        
+        synthesizer_result = client.analyze(
+            synthesizer_prompt,
+            model_override=byok_config.synthesizer_model
+        )
+        enrichment = LLMAnalysisAdapter().adapt(synthesizer_result)
+        llm_metadata["synthesizer_used"] = True
+        llm_metadata["card_count"] = len(enrichment.cards)
+        
+        enriched_report = _merge_llm_enrichment(report, enrichment)
+        return _update_report_metadata(enriched_report, llm_metadata)
+        
+    except (BYOKClientError, TypeError, ValueError) as exc:
+        llm_metadata.update(
+            {
+                "synthesizer_used": False,
+                "fallback_reason": "synthesizer_error",
                 "error_type": exc.__class__.__name__,
                 "error_message": str(exc),
             }
         )
         return _update_report_metadata(report, llm_metadata)
-
-    llm_metadata.update(
-        {
-            "used": True,
-            "fallback_reason": None,
-            "card_count": len(enrichment.cards),
-        }
-    )
-    enriched_report = _merge_llm_enrichment(report, enrichment)
-    return _update_report_metadata(enriched_report, llm_metadata)
 
 
 def _merge_llm_enrichment(

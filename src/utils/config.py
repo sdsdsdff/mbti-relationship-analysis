@@ -141,8 +141,10 @@ def _env_overrides(env: Mapping[str, str]) -> dict[str, Any]:
         byok_overrides["enabled"] = _parse_bool(env[f"{ENV_PREFIX}BYOK_ENABLED"])
     if f"{ENV_PREFIX}BYOK_PROVIDER" in env:
         byok_overrides["provider"] = env[f"{ENV_PREFIX}BYOK_PROVIDER"]
-    if f"{ENV_PREFIX}BYOK_MODEL" in env:
-        byok_overrides["model"] = env[f"{ENV_PREFIX}BYOK_MODEL"]
+    if f"{ENV_PREFIX}BYOK_ANALYZER_MODEL" in env:
+        byok_overrides["analyzer_model"] = env[f"{ENV_PREFIX}BYOK_ANALYZER_MODEL"]
+    if f"{ENV_PREFIX}BYOK_SYNTHESIZER_MODEL" in env:
+        byok_overrides["synthesizer_model"] = env[f"{ENV_PREFIX}BYOK_SYNTHESIZER_MODEL"]
     if f"{ENV_PREFIX}BYOK_BASE_URL" in env:
         byok_overrides["base_url"] = env[f"{ENV_PREFIX}BYOK_BASE_URL"]
     if f"{ENV_PREFIX}BYOK_API_KEY" in env:
@@ -173,9 +175,13 @@ class BYOKConfig(BaseModel):
         default=BYOKProvider.OPENAI,
         description="Provider label used for API routing and secret lookup.",
     )
-    model: str = Field(
-        default="gpt-4.1-mini",
-        description="Default model name for the configured provider.",
+    analyzer_model: str = Field(
+        default="gpt-4o-mini",
+        description="Sub-model for local fragment understanding and signal extraction.",
+    )
+    synthesizer_model: str = Field(
+        default="gpt-4o",
+        description="Main-model for global comprehensive judgment and report generation.",
     )
     api_key: str | None = Field(
         default=None,
